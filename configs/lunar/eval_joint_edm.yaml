@@ -1,0 +1,66 @@
+root_dir: ${hydra.runtime.cwd}
+
+env_id: 'LunarLander-v4'
+seed: 0
+random_initialization: false 
+task: 'land_v1'
+num_episode: 5
+max_episode_step: 1000
+device: 'cuda:0'
+exp_name: eval_joint_edm
+wandb_project_name: 'diffusion_test'
+wandb_log_dir: '${root_dir}/model_param/log/eval/'
+wandb_entity: null
+save_video: false   
+track: true
+result_save_dir: "${root_dir}/data/eval/joint_edm_metrics.csv"
+
+## Diffusion Model
+joint_edm_model_path: "${root_dir}/data/joint_edm/<YOUR_JOINT_EDM>.pth"
+joint_edm_model:
+  _target_: diffusha.model.diffusion_model.JointConditionModel
+  input_dim: 2                       
+  condition1_dim: 8
+  condition2_dim: 8                     
+  hidden_dim: 256             # latent dimension for noise and class labels embedding
+  share_condition_encoder: true
+
+joint_edm_denoiser:
+  _target_: diffusha.algo.denoiser.JointConditionDenoiser
+  sigma_data: 0.5
+  sigma_max: 80.0
+  sigma_min: 0.002
+  rho: 7.0
+  weight_schedule: "karras"
+  distillation: False
+  num_timesteps: 80 
+
+## FWD model
+fwd_trainer_cfg_path: 'configs/lunar/forward_model.yaml'
+fwd_model_path: '${root_dir}/data/fwd_model/<YOUR_FORWARD_MODEL>.pth'
+
+## Transformer
+joint_edm_transform_path: "${root_dir}/data/joint_edm/<YOUR_TRANSFORM>.pkl"
+
+condition_policy:
+  steps: 30
+  noise_level: 20
+  device: 'cuda:0'
+  sigma_min: 0.002
+  sigma_max: 80  
+  rho: 7.0
+  sampler_method: "deterministic_heun"
+
+expert_model: "${root_dir}/model_param/weight/lunar_expert/<YOUR_EXPERT>.pth"
+
+actor_type: 'noisy'
+actor_kwargs:
+  eps: 0.3
+  preserve_norm: false
+  seed: 42 
+
+# actor_type: 'laggy'
+# actor_kwargs:
+#   repeat_prob: 0.3 
+#   seed: 42 
+

@@ -1,0 +1,71 @@
+# Ignore model data
+/models/
+*.pt
+*.h5
+/data/
+/outputs/
+*.sh
+# Ignore log files
+/log/
+*.log
+/wandb
+/logs/
+/archives/
+
+# Ignore large datasets
+/data/
+/*data
+*.csv
+*.json
+*.pyc
+# Ignore checkpoints
+/checkpoints/
+*.ipynb
+*.out 
+/wandb/
+/PegInsertionSide-v1/
+
+# /configs
+/configs_ur5
+
+# Ignore configs
+# /configs/
+
+# Release: keep checkpoints and training logs local only (not in git)
+model_param/log/
+model_param/weight/
+*.pth
+*.pkl
+
+# Ignore model params
+# /*model_param
+*.txt
+*.sh
+
+/Safe_Policy_Optimization/*
+/safety-gymnasium-main/*
+
+
+ddpm_logs
+ddpm_peg_logs
+ddpm_results
+ddpm_results_old
+archived_launch_scripts
+
+fwd_model
+ddpm_peg_results
+
+/dataset
+/test_dataset
+/test_model_param
+
+/log
+
+/dataset
+# /model_param
+/result_analysis
+/safety-gymnasium-main
+
+working_log.md
+
+paper_videos

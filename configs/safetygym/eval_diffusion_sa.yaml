@@ -1,0 +1,78 @@
+root_dir: ${hydra.runtime.cwd}
+wandb_project_name: 'diffusha'
+wandb_log_dir: '${root_dir}/log/'
+wandb_entity: null
+save_video: false  
+track: false
+
+exp_name: 'Eval_CM'   ### <------------------ Change this
+env_id: 'SafetyPointGoal1-v0' 
+seed: 0  
+
+## <---------------- Change this for Expert 
+expert_dir: "${root_dir}/data/<YOUR_SAFETY_EXPERT_RUN>"
+result_save_dir: "${root_dir}/data/sa/eval//debug.csv"
+eval_user: false
+
+num_episode: 30
+max_episode_step: 1000
+device: 'cuda:0'
+n_steps: 30  #### <----------------- Change this for policy steps
+noise_level:  28  #### <----------------- Change this for noise level 
+
+## Diffusion Model
+model_dir: "${root_dir}/data/joint_cm/<YOUR_JOINT_CM_RUN>"
+
+joint_cm_model:
+  _target_: diffusha.model.diffusion_model.JointConditionModel
+  input_dim: 2                       
+  condition1_dim: 44
+  condition2_dim: 44                     
+  hidden_dim: 256             # latent dimension for noise and class labels embedding
+  share_condition_encoder: false
+
+joint_cm_denoiser:
+  _target_: diffusha.algo.denoiser.JointConditionDenoiser
+  sigma_data: 0.5
+  sigma_max: 80.0
+  sigma_min: 0.002
+  rho: 7.0
+  weight_schedule: "karras"
+  distillation: False
+  num_timesteps: 80 
+
+## FWD model
+fwd_trainer_cfg_path: 'configs/safetygym/forward_model_sa.yaml'
+
+
+condition_policy:
+  steps:  ${n_steps}       
+  noise_level: ${noise_level}   
+  device: '${device}'
+  sigma_min: 0.002
+  sigma_max: 80  
+  rho: 7.0
+  sampler_method: "onestep"
+  use_normalize_delta_obs: true
+  use_predict_next_state: true
+  # use_predict_next_state: true   #### <----------------- Change this for actor type
+
+
+# actor_type: 'noisy'   #### <----------------- Change this for actor type
+# actor_kwargs:
+#   eps: 0.0
+#   preserve_norm: false
+#   seed: ${seed} 
+
+actor_type: 'laggy'
+actor_kwargs:
+  repeat_prob: 0.4
+  seed: ${seed}
+
+# actor_type: 'noised'
+# actor_kwargs:
+#   eps: 1.0
+#   noise_scale: 0.0
+#   preserve_norm: false
+#   seed: ${seed} 
+

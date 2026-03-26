@@ -1,0 +1,28 @@
+root_dir: ${hydra.runtime.cwd}
+wandb_project_name: 'diffusion_test'
+wandb_log_dir: '${root_dir}/wandb_log/'
+wandb_entity: null
+track: false
+save_video: false                  # Flag to save video during data collection
+num_vis_episodes: 50
+
+
+exp_name: 'DC_Sa_PointGoal1'   ### <------------------ Change this
+env_id: 'SafetyPointGoal1-v0' 
+seed: 42                           # Seed for random number generator
+
+eval_dir: "${root_dir}/data/<YOUR_SAFETY_EXPERT_RUN>"
+
+randp: 0.0       # <------------------ Change this 
+data_dir: "${root_dir}/data/Sa/DC/SafetyPointGoal1-v0"                # Path to store generated data
+
+chunk_size: 10000              # Size of data chunks
+desired_num_chunks: 10
+maximum_steps: 300000          # Number of transitions to collect
+
+
+device: 'cuda:0'
+
+
+
+

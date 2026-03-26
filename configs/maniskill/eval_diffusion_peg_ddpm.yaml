@@ -1,0 +1,75 @@
+root_dir: ${hydra.runtime.cwd}
+
+wandb_project_name: 'FlashBack_videos'      #### <----------------- Change this to your experiment name
+wandb_log_dir: '${root_dir}/model_param/log/eval/'
+wandb_entity: null
+save_video: true
+random_initialization: true
+track: true
+eval_user: false
+
+result_save_dir: "${root_dir}/data/eval/peg_metrics.csv"
+
+
+exp_name: "DDPM_Noisy_Peg"
+env_id: 'SimplePegInsertion-v1'
+obs_mode: "state_dict" # there is also "state_dict", "rgbd", ...
+control_mode: "pd_joint_delta_pos"  # there is also "pd_joint_delta_pos", ...
+render_mode: "rgb_array"
+n_env: 1
+task: 'peg_insertion'
+
+seed: 42
+num_episode: 30
+max_episode_step: 200
+device: 'cuda:1'
+
+
+ddpm_denoiser:
+  _target_: diffusha.algo.denoiser.DDPMDenoiser
+  num_diffusions_steps: 50 # align with ddpm_model: n_steps, to make noise schedule
+  cond_dim: 35 # this is state_dim
+  beta_schedule: sigmoid     #### <----------------- Match your beta schedule
+  beta_min: 1e-4
+  beta_max: 0.05
+
+
+ddpm_model_path: "${root_dir}/model_param/weight/peg_ddpm/<YOUR_RUN>/<YOUR_DDPM>.pth"
+
+
+ddpm_model:
+  _target_: diffusha.algo.ddpm_base.ConditionalModel
+  n_steps: 50
+  input_size: 43 # this align with action_dim + state_dim
+
+ddpm_policy:
+  _target_: diffusha.algo.diffusion_policy.DDPMPolicy
+  fwd_diffuse_ratio: 0.0
+  device: ${device}
+
+expert_model: "${root_dir}/model_param/weight/peg_expert/<YOUR_EXPERT>.pth"
+
+# actor_type: 'noisy'
+# actor_kwargs:
+#   eps: 0.15
+#   preserve_norm: false
+#   seed: ${seed} 
+
+# actor_type: 'laggy'
+# actor_kwargs:
+#   repeat_prob: 0.80
+#   seed: ${seed} 
+
+actor_type: 'noised'
+actor_kwargs:
+  eps: 1.0
+  noise_scale: 0.2
+  preserve_norm: false
+  seed: ${seed} 
+
+
+# actor_type: 'slow'
+# actor_kwargs:
+#   speed: 0.65
+#   seed: ${seed} 
+

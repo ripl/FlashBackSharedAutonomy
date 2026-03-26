@@ -1,0 +1,82 @@
+root_dir: ${hydra.runtime.cwd}
+param_dir: 'model_param'
+
+exp_name: 'jointCM_Peg_Retrain_wo_fwd' ### <----------------- Change this to your experiment name
+seed: 42
+n_iter: 3000
+batch_size: 4096
+device: 'cuda:0'
+lr: 0.0003
+ema_rate: 0.999
+target_rate: 0.999
+discrete_steps: 80
+gamma: 0.5
+use_weighting_model: false
+use_normalize_delta_obs: true
+
+
+# Logging with wandb
+track: true
+wandb_project_name: 'test_train_diffusion'
+wandb_entity: null
+wandb_logdir: '${root_dir}/log/'
+
+# save model
+load_model: false
+save_every: 500
+save_dir: '${root_dir}/${param_dir}/weight/peg_cm'
+log_dir: '${root_dir}/${param_dir}/log/peg_edm'
+
+dataset:
+  _target_: diffusha.data_collection.buffer.ExpertTransitionDataset_v2
+  directory: "${root_dir}/dataset/<TASK>/<YOUR_COLLECTION_RUN>"
+  state_dim: 35
+  action_dim: 8
+  use_transition: true
+  add_noise : false
+
+joint_cm_model:
+  _target_: diffusha.model.diffusion_model.JointConditionModel
+  input_dim: 8                
+  condition1_dim: 35
+  condition2_dim: 35                
+  hidden_dim: 256             
+  share_condition_encoder: false
+
+joint_cm_denoiser:
+  _target_: diffusha.algo.denoiser.JointConditionDenoiser
+  sigma_data: 0.5
+  sigma_max: 80.0
+  sigma_min: 0.002
+  rho: 7.0
+  weight_schedule: "karras"
+  distillation: true
+  num_timesteps: 80 
+
+# teacher model 
+load_teacher_model: true
+teacher_model_path: "${root_dir}/model_param/weight/peg_edm/<YOUR_JOINT_EDM>.pth"
+
+teacher_model:
+  _target_: diffusha.model.diffusion_model.JointConditionModel
+  input_dim: 8                
+  condition1_dim: 35
+  condition2_dim: 35                  
+  hidden_dim: 256             # latent dimension for noise and class labels embedding
+  share_condition_encoder: false
+
+teacher_denoiser:
+  _target_: diffusha.algo.denoiser.JointConditionDenoiser
+  sigma_data: 0.5
+  sigma_max: 80.0
+  sigma_min: 0.002
+  rho: 7.0
+  weight_schedule: "karras"
+  distillation: False
+  num_timesteps: 80 
+
+# Forward Model
+use_forward_model: false
+fwd_trainer_cfg_path: 'configs/maniskill/forward_model_peg.yaml'
+
+

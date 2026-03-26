@@ -1,0 +1,55 @@
+root_dir: ${hydra.runtime.cwd}
+
+
+exp_name: 'EDM_sa' ###  <----------- Change this
+seed: 42
+n_iter: 5000
+batch_size: 4096
+gamma: 0.5  ###  <----------- Change this, 1.0 = all uncondition, no next state 
+device: 'cuda:0'
+lr: 0.0003
+ema_rate: 0.999
+use_weighting_model: true
+use_normalize_delta_obs: true
+
+# Logging with wandb
+track: true
+wandb_project_name: 'diffusha'
+wandb_entity: null
+wandb_logdir: '${root_dir}/log/'
+
+# save model
+save_every: 1000
+save_dir: '${root_dir}/data/Sa/Model/joint_edm'
+log_dir: '${root_dir}/log/joint_edm'
+
+dataset:
+  _target_: diffusha.data_collection.buffer.ExpertTransitionDataset_v2
+  directory: "${root_dir}/data/<YOUR_SA_DATASET>"
+  state_dim: 44
+  action_dim: 2
+  use_transition: true
+  add_noise: false
+
+joint_edm_model:
+  _target_: diffusha.model.diffusion_model.JointConditionModel
+  input_dim: 2                       
+  condition1_dim: 44
+  condition2_dim: 44                 
+  hidden_dim: 256            # latent dimension for noise and class labels embedding
+  share_condition_encoder: false
+
+joint_edm_denoiser:
+  _target_: diffusha.algo.denoiser.JointConditionDenoiser
+  sigma_data: 0.5
+  sigma_max: 80.0
+  sigma_min: 0.002
+  rho: 7.0
+  weight_schedule: "karras"
+  distillation: False
+  num_timesteps: 80 
+
+# Forward Model
+use_forward_model: false
+fwd_trainer_cfg_path: 'configs/safetygym/forward_model_sa.yaml'
+load_fwd_path: null

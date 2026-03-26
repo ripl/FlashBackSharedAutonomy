@@ -1,0 +1,68 @@
+root_dir: ${hydra.runtime.cwd}
+
+exp_name: 'CM_land_v2_reach_v2' 
+
+seed: 42
+n_iter: 5000
+batch_size: 2048
+device: 'cuda:0'
+lr: 0.0001
+ema_rate: 0.999
+target_rate: 0.999
+discrete_steps: 80
+
+
+# Logging with wandb
+track: true
+wandb_project_name: 'diffusion_cm_test'
+wandb_entity: null
+wandb_logdir: '${root_dir}/model_param/log/cm/'
+
+# save model
+save_every: 1000
+save_dir: '${root_dir}/data/cm'
+log_dir: '${root_dir}/model_param/log/cm'
+
+# teacher model 
+teacher_model_path: "${root_dir}/data/<YOUR_TRAINED_EDM>.pth"
+
+dataset:
+  _target_: diffusha.data_collection.buffer.ExpertTransitionDataset
+  directory: "${root_dir}/data/<YOUR_EXPERT_DATASET>"
+  state_dim: 8
+  action_dim: 2
+
+cm_model:
+  _target_: diffusha.model.diffusion_model.Model
+  input_dim: 2                       
+  output_dim: 2                      
+  condition_dim: 8                     
+  hidden_dim: 256             # latent dimension for noise and class labels embedding
+
+denoiser:
+  _target_: diffusha.algo.denoiser.KarrasDenoiser
+  sigma_data: 0.5
+  sigma_max: 80.0
+  sigma_min: 0.002
+  rho: 7.0
+  weight_schedule: "karras"
+  distillation: False
+  loss_norm: "l2"
+
+teacher_model:
+  _target_: diffusha.model.diffusion_model.Model
+  input_dim: 2                       
+  output_dim: 2                      
+  condition_dim: 8                     
+  hidden_dim: 256             # latent dimension for noise and class labels embedding
+
+teacher_denoiser:
+  _target_: diffusha.algo.denoiser.KarrasDenoiser
+  sigma_data: 0.5
+  sigma_max: 80.0
+  sigma_min: 0.002
+  rho: 7.0
+  weight_schedule: "karras"
+  distillation: False
+  loss_norm: "l2"
+

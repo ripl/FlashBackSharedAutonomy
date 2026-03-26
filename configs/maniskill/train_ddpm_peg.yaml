@@ -1,0 +1,41 @@
+root_dir: ${hydra.runtime.cwd}
+param_dir: 'model_param'
+exp_name: 'DDPM_peg_2'  ## <---------- change this
+seed: 42
+n_iter: 4000
+batch_size: 4096
+device: 'cuda:1'
+lr: 1e-3
+ema_rate: 0.999
+
+# Logging with wandb
+track: true
+wandb_project_name: 'train_diffusion' ## <---------- change this
+wandb_entity: null
+wandb_logdir: '${root_dir}/wandb_log/'
+
+# save model
+save_every: 1000
+save_dir: '${root_dir}/${param_dir}/weight/peg_ddpm'
+log_dir: '${root_dir}/${param_dir}/log/peg_ddpm'
+
+dataset:
+  _target_: diffusha.data_collection.buffer.ExpertTransitionDataset_v2
+  directory: "${root_dir}/dataset/<TASK>/<YOUR_COLLECTION_RUN>"
+  directory: "${root_dir}/dataset/<TASK>/<YOUR_COLLECTION_RUN>"
+  state_dim: 35
+  action_dim: 8
+  use_transition: false
+
+ddpm_model:
+  _target_: diffusha.algo.ddpm_base.ConditionalModel
+  n_steps: 50
+  input_size: 43 # this align with action_dim + state_dim
+
+ddpm_denoiser:
+  _target_: diffusha.algo.denoiser.DDPMDenoiser
+  num_diffusions_steps: 50 # align with ddpm_model: n_steps, to make noise schedule
+  cond_dim: 35 # this is state_dim
+  beta_schedule: sigmoid   ## <---------- change this
+  beta_min: 1e-4
+  beta_max: 0.05  ## <---------- change this

@@ -1,0 +1,65 @@
+root_dir: ${hydra.runtime.cwd}
+env_id: 'LunarLander-v4'
+task: 'land_v1'     #### <----------------- Change this to your task name
+seed: 42
+# num_episode: 100
+num_episode: 1
+max_episode_step: 1000
+device: 'cuda:1'
+exp_name: 'DDPM_lander'      
+wandb_project_name: 'FlashBack_videos'      #### <----------------- Change this to your experiment name
+wandb_log_dir: '${root_dir}/model_param/log/eval/'
+wandb_entity: null
+save_video: false
+random_initialization: false
+track: false
+eval_user: false
+result_save_dir: '${root_dir}/data/eval/lunar_lander_metrics.csv'
+
+
+ddpm_denoiser:
+  _target_: diffusha.algo.denoiser.DDPMDenoiser
+  num_diffusions_steps: 50 # align with ddpm_model: n_steps, to make noise schedule
+  cond_dim: 8 # this is state_dim
+  beta_schedule: sigmoid     #### <----------------- Match your beta schedule
+  beta_min: 1e-4
+  beta_max: 0.05
+
+
+ddpm_model_path: '${root_dir}/model_param/weight/lunar_ddpm/<YOUR_RUN>/<YOUR_DDPM>.pth'
+
+ddpm_model:
+  _target_: diffusha.algo.ddpm_base.ConditionalModel
+  n_steps: 50
+  input_size: 10 # this align with action_dim + state_dim
+
+ddpm_policy:
+  _target_: diffusha.algo.diffusion_policy.DDPMPolicy
+  # fwd_diffuse_ratio: 0.4
+  fwd_diffuse_ratio: 0.0
+  device: 'cuda:1'
+
+expert_model: "${root_dir}/model_param/weight/lunar_expert/<YOUR_EXPERT>.pth"
+
+actor_type: 'noisy'
+actor_kwargs:
+  eps: 0.80
+  preserve_norm: false
+  seed: 42 
+
+# actor_type: 'laggy'
+# actor_kwargs:
+#   repeat_prob: 0.85 # for laggy actor
+#   seed: 42 
+
+# actor_type: 'noised'
+# actor_kwargs:
+#   noise_scale: 0.45
+#   preserve_norm: false
+#   seed: ${seed} 
+
+# actor_type: 'slow'
+# actor_kwargs:
+#   speed: 0.50
+#   seed: ${seed} 
+

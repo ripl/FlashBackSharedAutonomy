@@ -1,0 +1,62 @@
+root_dir: ${hydra.runtime.cwd}
+
+env_id: 'LunarLander-v4'
+
+random_initialization: false 
+task: 'reach_v1'
+seed: 0
+num_episode: 50
+max_episode_step: 1000
+device: 'cuda:0'
+wandb_project_name: 'diffusion_test'
+wandb_log_dir: '${root_dir}/model_param/log/eval/'
+wandb_entity: null
+save_video: true   
+track: true
+
+exp_name: "CM_land_v1_sigma_-20"
+
+
+denoiser:
+  _target_: diffusha.algo.denoiser.KarrasDenoiser
+  sigma_data: 0.5
+  sigma_max: 80.0
+  sigma_min: 0.002
+  rho: 7.0
+  weight_schedule: "karras"
+  distillation: false
+  loss_norm: "l2"
+
+
+cm_model_path: "${root_dir}/data/cm/<YOUR_CM>.pth"
+cm_transform_path: "${root_dir}/data/cm/<YOUR_CM>.transform.pkl"
+cm_model:
+  _target_: diffusha.model.diffusion_model.Model
+  input_dim: 2                       
+  output_dim: 2                      
+  condition_dim: 8                     
+  hidden_dim: 256 
+
+cm_policy:
+  steps: 40
+  device: 'cuda:0'
+  sigma_min: 0.002
+  sigma_max: 80  
+  rho: 7.0
+  sampler_method: "onestep"
+  s_tmin: 0.0
+  s_tmax: 80
+
+
+expert_model: "${root_dir}/data/expert/Reach_v1/LunarLander-v4__Expert_reach_v1__42.actor.pth"
+
+actor_type: 'noisy'
+actor_kwargs:
+  eps: 0.6
+  preserve_norm: false
+  seed: ${seed}
+
+# actor_type: 'laggy'
+# actor_kwargs:
+#   repeat_prob: 0.85
+#   seed: 42 

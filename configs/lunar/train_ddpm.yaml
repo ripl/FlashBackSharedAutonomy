@@ -1,0 +1,43 @@
+root_dir: ${hydra.runtime.cwd}
+param_dir: 'model_param'
+exp_name: 'DDPM_reach_v1_0.05'  ## <---------- change this
+# exp_name: 'DDPM_land_v1'  ## <---------- change this
+seed: 42
+n_iter: 3000
+batch_size: 4096
+device: 'cuda:1'
+lr: 1e-3
+ema_rate: 0.999
+
+# Logging with wandb
+track: true
+wandb_project_name: 'train_diffusion' ## <---------- change this
+wandb_entity: null
+wandb_logdir: '${root_dir}/wandb_log/'
+
+# save model
+save_every: 1000
+save_dir: '${root_dir}/${param_dir}/weight/lunar_ddpm'
+log_dir: '${root_dir}/${param_dir}/log/lunar_ddpm'
+
+dataset:
+  _target_: diffusha.data_collection.buffer.ExpertTransitionDataset_v2
+  directory: '${root_dir}/dataset/lunar/<YOUR_COLLECTION_RUN>'
+  state_dim: 8
+  action_dim: 2
+  use_transition: false
+
+ddpm_model:
+  _target_: diffusha.algo.ddpm_base.ConditionalModel
+  n_steps: 50
+  input_size: 10 # this align with action_dim + state_dim
+
+ddpm_denoiser:
+  _target_: diffusha.algo.denoiser.DDPMDenoiser
+  num_diffusions_steps: 50 # align with ddpm_model: n_steps, to make noise schedule
+  cond_dim: 8 # this is state_dim
+  beta_schedule: sigmoid   ## <---------- change this
+  beta_min: 1e-4
+  beta_max: 0.05  ## <---------- change this
+  # land: beta_max = 0.05
+  # reach: beta_max = 0.1

@@ -1,0 +1,34 @@
+root_dir: ${hydra.runtime.cwd}
+wandb_project_name: 'expert_data_collection'
+wandb_log_dir: '${root_dir}/wandb_log/'
+wandb_entity: null
+track: true
+save_video: true                  # Flag to save video during data collection
+num_vis_episodes: 50
+task_name: 'reach_v1'   ### <------------------ Change this
+
+
+exp_name: '${task_name}'   ### <------------------ Change this
+env_id: 'LunarLander-v4' 
+task: '${task_name}'             ### <------------------ Change this 
+random_initialization: false
+
+load_model: true
+# model_path: "${root_dir}/data/expert/new_lander/LunarLander-v4__Expert_lander__42.actor.pth"   ### <------------------ Change this
+# model_path: "${root_dir}/model_param/weight/lunar_expert/land_v1/best/LunarLander-v4__land_v1__42.actor.pth"   ### <------------------ Change this}"
+model_path: "${root_dir}/model_param/weight/lunar_expert/reach_v1/best/LunarLander-v4__reach_v1__42.actor.pth"   ### <------------------ Change this}"
+seed: 0 
+
+randp: 0.1       # <------------------ Change this 
+data_dir: "${root_dir}/dataset/lunar/${task_name}"                # Path to store generated data  # <------------------ Change this 
+
+# Dataset size of lunar: 200k
+chunk_size: 10000             # Size of data chunks
+desired_num_chunks: 20
+maximum_steps: 10000000          # Number of transitions to collect
+
+device: 'cuda:0'
+
+
+
+

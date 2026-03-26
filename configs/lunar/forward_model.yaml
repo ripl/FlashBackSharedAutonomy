@@ -1,0 +1,26 @@
+# Paths are relative to the repository root (Hydra get_original_cwd() when loading this file).
+forward_model:
+  _target_: diffusha.model.diffusion_model.ForwardModel
+  state_dim: 8
+  action_dim: 2
+  next_state_dim: 8
+  hidden_dim: 256
+  deterministic: true
+  action_range: [
+    [-2.5,-2.5, -10.,-10. , -6.2831855,-10., -0.,-0.],
+    [2.5,2.5, 10.,10. , 6.2831855,10., 1.,1.]
+    ]
+
+forward_trainer:
+  device: "cuda:0"
+  lr: 0.0001
+  save_dir: model_param/weight/lunar_expert
+  exp_name: 'Forward_land_v1'
+  seed: 42
+
+  ## For forward trainer run loop
+  track: true
+  wandb_project_name: 'diffusion_test'
+  wandb_entity: null 
+  wandb_logdir: model_param/log/lunar_expert
+  save_every: 1000

@@ -1,0 +1,43 @@
+### Root Dir 
+root_dir: ${hydra.runtime.cwd}
+
+wandb_project_name: 'expert_data_collection'
+wandb_log_dir: '${root_dir}/wandb_log/'
+wandb_entity: null
+track: true
+save_video: true                  # Flag to save video during data collection
+num_vis_episodes: 50
+task_name: 'SimplePegInsertion-v1'  
+
+## Task Specification 
+exp_name: '${task_name}'     ### <------------------ Change this
+# exp_name: 'DC_ChargePlug_2_Task'    
+env_id: '${task_name}' ### <------------------ Change this 
+# env_id: 'SimpleChargerPlug-v1'
+obs_mode: "state_dict" # there is also "state_dict", "rgbd", ...
+control_mode: "pd_joint_delta_pos"  # there is also "pd_joint_delta_pos", ...
+render_mode: "rgb_array"
+n_env: 1
+
+
+load_model: true
+model_path: "${root_dir}/model_param/weight/peg_expert/<RUN_DIR>/<CHECKPOINT>.pth"
+
+seed: 42                             # Seed for random number generator
+
+randp: 0.1 # <------------------ Change this
+perturb_method: 'noisy' # <------------------ Change this
+
+data_dir: "${root_dir}/dataset/Peg/${task_name}"                    # Path to store generated data <------------------ Change this  
+
+chunk_size: 10000                # Size of data chunks
+desired_num_chunks: 20
+maximum_steps: 1000000          # Number of transitions to collect
+
+# valid_return_threshold: 250      # Threshold for valid episode returns
+
+device: 'cuda:0'
+
+
+
+

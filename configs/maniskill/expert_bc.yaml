@@ -1,0 +1,37 @@
+### Root Dir 
+root_dir: ${hydra.runtime.cwd}
+
+seed: 42
+torch_deterministic: true
+cuda: true
+track: true
+wandb_project_name: 'maniskill_test'
+wandb_entity: null
+
+## Task Specification
+exp_name: 'BC_Peg_noisy_noised' ### <--------------- change this 
+# exp_name: 'BC_Charger_noised'
+env_id: 'SimplePegInsertion-v1' ### <--------------- change this  
+# env_id: 'SimpleChargerPlug-v1'
+obs_mode: "state_dict" # there is also "state_dict", "rgbd", ...
+control_mode: "pd_joint_delta_pos"  # there is also "pd_joint_delta_pos", ...
+render_mode: "human"
+
+n_env: 1
+total_iterations: 1000
+batch_size: 4096
+add_noise: true  ### <--------------- change this 
+eval_every: 50
+save_every_iterations: 2000
+
+## BC 
+ent_coef: 0.0
+max_grad_norm: 0.5
+policy_lr: 3e-4  # 3e-4
+data_dir: "data/<YOUR_BC_DATASET>"
+
+# save model
+load_dir: null
+# load_dir: null  # optional resume path
+save_dir: '${root_dir}/data'
+log_dir: '${root_dir}/logs'

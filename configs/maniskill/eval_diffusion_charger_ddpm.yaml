@@ -1,0 +1,70 @@
+root_dir: ${hydra.runtime.cwd}
+
+wandb_project_name: 'FlashBack_videos'      #### <----------------- Change this to your experiment name
+wandb_log_dir: '${root_dir}/model_param/log/eval/'
+wandb_entity: null
+save_video: false
+track: false
+suffix: "sweep"
+save_json: false
+eval_user: false
+
+result_save_dir: "${root_dir}/data/eval/charger_metrics.csv"
+
+
+exp_name: "DDPM_noised_charger"
+env_id: 'SimpleChargerPlug-v1'
+obs_mode: "state_dict" # there is also "state_dict", "rgbd", ...
+control_mode: "pd_joint_delta_pos"  # there is also "pd_joint_delta_pos", ...
+render_mode: "rgb_array"
+n_env: 1
+task: 'charger'
+
+seed: 42
+num_episode: 30
+max_episode_step: 300
+device: 'cuda:0'
+# device: 'cpu'
+
+
+ddpm_denoiser:
+  _target_: diffusha.algo.denoiser.DDPMDenoiser
+  num_diffusions_steps: 50 # align with ddpm_model: n_steps, to make noise schedule
+  cond_dim: 32 # this is state_dim
+  beta_schedule: sigmoid     #### <----------------- Match your beta schedule
+  beta_min: 1e-4
+  beta_max: 0.05
+
+
+ddpm_model_path: "${root_dir}/model_param/weight/charger_ddpm/<YOUR_RUN>/<YOUR_DDPM>.pth"
+
+ddpm_model:
+  _target_: diffusha.algo.ddpm_base.ConditionalModel
+  n_steps: 50
+  input_size: 40 # this align with action_dim + state_dim
+
+ddpm_policy:
+  _target_: diffusha.algo.diffusion_policy.DDPMPolicy
+  fwd_diffuse_ratio: 0.0
+  device: ${device}
+
+expert_model: "${root_dir}/model_param/weight/charger_expert/<YOUR_EXPERT>.pth"
+
+# actor_type: 'noisy'
+# actor_kwargs:
+#   eps: 0.15
+#   preserve_norm: false
+#   seed: ${seed} 
+
+# actor_type: 'laggy'
+# actor_kwargs:
+#   repeat_prob: 0.6
+#   seed: ${seed}  
+
+actor_type: 'noised'
+actor_kwargs:
+  eps: 1.0
+  noise_scale: 0.1
+  preserve_norm: false
+  seed: ${seed} 
+

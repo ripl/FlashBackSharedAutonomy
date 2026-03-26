@@ -1,0 +1,77 @@
+root_dir: ${hydra.runtime.cwd}
+
+exp_name: 'jointCM_Lunar' ### <----------------- Change this to your experiment name
+seed: 42
+n_iter: 3000
+batch_size: 4096
+device: 'cuda:0'
+lr: 0.0003
+ema_rate: 0.999
+target_rate: 0.999
+discrete_steps: 80
+gamma: 0.5
+use_weighting_model: false
+use_normalize_delta_obs: true
+
+
+# Logging with wandb
+track: true
+wandb_project_name: 'diffusha'
+wandb_entity: null
+wandb_logdir: '${root_dir}/log/'
+
+# save model
+load_model: false
+save_every: 500
+save_dir: '${root_dir}/data/joint_cm'
+log_dir: '${root_dir}/log/joint_cm'
+
+dataset:
+  _target_: diffusha.data_collection.buffer.ExpertTransitionDataset_v2
+  directory: "${root_dir}/data/<YOUR_COLLECTED_TRANSITION_DATASET>"
+  state_dim: 8
+  action_dim: 2
+  use_transition: true
+  add_noise : false
+
+joint_cm_model:
+  _target_: diffusha.model.diffusion_model.JointConditionModel
+  input_dim: 2        
+  condition1_dim: 8
+  condition2_dim: 8               
+  hidden_dim: 256             
+  share_condition_encoder: false
+
+joint_cm_denoiser:
+  _target_: diffusha.algo.denoiser.JointConditionDenoiser
+  sigma_data: 0.5
+  sigma_max: 80.0
+  sigma_min: 0.002
+  rho: 7.0
+  weight_schedule: "karras"
+  distillation: true
+  num_timesteps: 80 
+
+teacher_model_path: "${root_dir}/data/<YOUR_TRAINED_JOINT_EDM>.pth"
+
+teacher_model:
+  _target_: diffusha.model.diffusion_model.JointConditionModel
+  input_dim: 2            
+  condition1_dim: 8
+  condition2_dim: 8         
+  hidden_dim: 256             # latent dimension for noise and class labels embedding
+  share_condition_encoder: false
+
+teacher_denoiser:
+  _target_: diffusha.algo.denoiser.JointConditionDenoiser
+  sigma_data: 0.5
+  sigma_max: 80.0
+  sigma_min: 0.002
+  rho: 7.0
+  weight_schedule: "karras"
+  distillation: False
+  num_timesteps: 80 
+
+# Forward Model
+use_forward_model: true
+fwd_trainer_cfg_path: 'configs/lunar/forward_model.yaml'

@@ -1,0 +1,93 @@
+root_dir: ${hydra.runtime.cwd}
+
+env_id: 'LunarLander-v4'
+seed: 42
+random_initialization: false
+# task: 'reach_v1' #### <----------------- Change this 
+task: 'land_v1' #### <----------------- Change this 
+num_episode: 1
+
+# for blend actor, the linear interpolation coefficient
+beta: 0.5
+
+
+max_episode_step: 1000
+device: 'cuda:0'
+exp_name: 'CM_lander'     #### <----------------- Change this to your experiment name
+wandb_project_name: 'diffusion_eval'
+wandb_log_dir: '${root_dir}/model_param/log/eval/'
+wandb_entity: null
+save_video: false 
+track: false
+n_steps: 30  #### <----------------- Change this for policy steps
+noise_level:  9  #### <----------------- Change this for noise level 
+
+
+## Diffusion Model
+model_dir: "${root_dir}/model_param/weight/<YOUR_JOINT_CM_RUN_DIR>"
+result_save_dir: "${root_dir}/data/eval/lunar_joint_cm_metrics.csv"
+eval_user: False
+
+joint_cm_model:
+  _target_: diffusha.model.diffusion_model.JointConditionModel
+  input_dim: 2                       
+  condition1_dim: 8
+  condition2_dim: 8                     
+  hidden_dim: 256             # latent dimension for noise and class labels embedding
+  share_condition_encoder: false
+
+joint_cm_denoiser:
+  _target_: diffusha.algo.denoiser.JointConditionDenoiser
+  sigma_data: 0.5
+  sigma_max: 80.0
+  sigma_min: 0.002
+  rho: 7.0
+  weight_schedule: "karras"
+  distillation: False
+  num_timesteps: 80 
+
+## FWD model
+fwd_trainer_cfg_path: 'configs/lunar/forward_model.yaml'
+
+
+condition_policy:
+  steps:  ${n_steps}       
+  noise_level: ${noise_level}   
+  device: '${device}'
+  sigma_min: 0.002
+  sigma_max: 80  
+  rho: 7.0
+  sampler_method: "onestep"
+  use_normalize_delta_obs: true
+  use_predict_next_state: true
+
+expert_model: "${root_dir}/model_param/weight/lunar_expert/<YOUR_EXPERT>.pth"
+
+
+actor_type: 'noisy'
+actor_kwargs:
+  eps: 0.30
+  preserve_norm: false
+  seed: 42 
+
+# actor_type: 'laggy'
+# actor_kwargs:
+#   repeat_prob: 0.85 # for laggy actor
+#   seed: 42 
+
+# actor_type: 'noised'
+# actor_kwargs:
+#   noise_scale: 0.45
+#   preserve_norm: false
+#   seed: ${seed} 
+
+# actor_type: 'slow'
+# actor_kwargs:
+#   speed: 0.50
+#   seed: ${seed} 
+hydra:
+  run:
+    dir: /tmp/hydra_out
+  job:
+    chdir: false
+

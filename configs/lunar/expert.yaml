@@ -1,0 +1,41 @@
+# Run training from the repository root so ${hydra.runtime.cwd} resolves correctly.
+root_dir: ${hydra.runtime.cwd}
+torch_deterministic: true
+cuda: true
+track: true
+wandb_project_name: 'expert_train'
+wandb_entity: null
+seed: 42
+
+exp_name: 'land_v1'
+
+env_id: 'LunarLander-v4'
+random_initialization: false
+task: 'land_v1'
+
+
+total_timesteps: 2000000
+buffer_size: 2000000  # 1e6 is converted to an integer
+save_every: 100000
+eval_every: 50000
+gamma: 0.99
+tau: 0.01
+batch_size: 4096
+# reach_v1: learning start 5k, land_v1: learning start 20k
+learning_starts: 20000  # 5e3 is converted to 5000
+policy_lr: 0.0003  # 3e-4
+q_lr: 0.0003  # 1e-3
+policy_frequency: 2
+target_network_frequency: 1
+alpha: 0.2
+autotune: true
+
+# save model
+load_dir: null
+save_dir: '${root_dir}/model_param/weight/lunar_expert'
+log_dir: '${root_dir}/model_param/log/lunar_expert'
+
+# Forward Model
+use_forward_model: true
+fwd_trainer_cfg_path: 'configs/lunar/forward_model.yaml'
+

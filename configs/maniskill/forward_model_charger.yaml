@@ -1,0 +1,25 @@
+# Paths are relative to the repository root. Training code may override save_dir.
+forward_model:
+  _target_: diffusha.model.diffusion_model.ForwardModel
+  state_dim: 32
+  action_dim: 8
+  next_state_dim: 32
+  hidden_dim: 256
+  deterministic: true
+  action_range: [
+    [-1,-1, -1, -1, -1,-1, -1,-1],
+    [1,1, 1, 1, 1,1, 1,1]
+    ]
+
+forward_trainer:
+  device: "cuda:0"
+  lr: 0.0001
+  save_dir: model_param/weight/forward/charger
+  exp_name: 'Forward_charger_v1'
+  seed: 42
+
+  track: true
+  wandb_project_name: 'diffusion_test'
+  wandb_entity: null 
+  wandb_logdir: model_param/log/fwd_model
+  save_every: 1000

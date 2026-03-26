@@ -1,0 +1,56 @@
+env_id: 'LunarLander-v4'
+seed: 0
+num_episode: 30
+max_episode_step: 1000
+device: 'cuda:0'
+exp_name: eval_edm
+wandb_project_name: 'diffusion_test'
+root_dir: ${hydra.runtime.cwd}
+wandb_log_dir: '${root_dir}/model_param/log/eval/'
+wandb_entity: null
+save_video: true   
+track: true
+
+denoiser:
+  _target_: diffusha.algo.denoiser.KarrasDenoiser
+  sigma_data: 0.5
+  sigma_max: 80.0
+  sigma_min: 0.002
+  rho: 7.0
+  weight_schedule: "karras"
+  distillation: False
+  loss_norm: "l2"
+
+edm_model_path: "${root_dir}/data/<YOUR_EDM_CHECKPOINT>.pth"
+edm_model:
+  _target_: diffusha.model.diffusion_model.Model
+  input_dim: 2                       
+  output_dim: 2                      
+  condition_dim: 8                     
+  hidden_dim: 256 
+
+edm_policy:
+  steps: 20
+  device: 'cuda:0'
+  sigma_min: 0.002
+  sigma_max: 80  
+  rho: 7.0
+  sampler_method: "deterministic_heun"
+  s_churn: 0.0
+  s_tmin: 0.0
+  s_tmax: 80
+  s_noise: 1.0
+
+expert_model: "${root_dir}/model_param/weight/lunar_expert/<YOUR_EXPERT>.pth"
+
+actor_type: 'noisy'
+actor_kwargs:
+  eps: 0.3
+  preserve_norm: false
+  seed: 42 
+
+# actor_type: 'laggy'
+# actor_kwargs:
+#   repeat_prob: 0.3 
+#   seed: 42 
+
